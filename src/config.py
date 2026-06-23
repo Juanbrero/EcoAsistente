@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 # 1. 🔥 CAPTURA PREVIA DEL ENTORNO REAL (Hugging Face Secrets)
 # Guardamos los tokens reales inyectados por la nube antes de que ocurra cualquier lectura de archivos.
 hf_gemini_key = os.environ.get("GEMINI_API_KEY")
+print("prueba")
 print(hf_gemini_key[:3])
 hf_flask_key = os.environ.get("FLASK_SECRET_KEY")
 print(hf_flask_key[:3])
