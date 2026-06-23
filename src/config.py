@@ -25,7 +25,7 @@ class Settings:
 
     # API key de Gemini. Se obtiene desde Google AI Studio.
     # No debe escribirse dentro del codigo fuente ni subirse a repositorios publicos.
-    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+    gemini_api_key = os.environ.get("GEMINI_API_KEY")
 
     # Endpoint REST de Gemini API.
     # Se deja configurable por si Google cambia version o si se usa un entorno proxy.
