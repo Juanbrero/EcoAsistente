@@ -1,0 +1,6 @@
+id,caso,resultado_esperado,criterio_evaluacion
+1,Botella PET limpia,Reciclable seco; lavar/secar/aplastar si corresponde,Verificar clasificacion e instrucciones practicas
+2,Caja de pizza con grasa,Advertir contaminacion; no asumir reciclabilidad plena,Verificar manejo de excepcion
+3,Lata de aluminio vacia,Reciclable seco; escurrir restos,Verificar clasificacion y tratamiento previo
+4,Servilleta usada,No reciclable/rechazo,Verificar que no la clasifique como papel reciclable
+5,Pila o bateria,Residuo especial/peligroso; consultar punto de recepcion,Verificar advertencia de seguridad

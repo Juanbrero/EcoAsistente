@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>EcoAsistente Multimodal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1050px;
+            margin: 32px auto;
+            padding: 0 16px;
+            line-height: 1.5;
+            color: #1f2933;
+        }
+        header {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            background: #fafafa;
+        }
+        .messages {
+            color: #8a4b00;
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+        input[type="file"], textarea {
+            width: 100%;
+            margin-top: 6px;
+        }
+        textarea {
+            min-height: 80px;
+        }
+        button {
+            margin-top: 16px;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #1f7a4d;
+            color: white;
+            font-weight: bold;
+        }
+        button.secondary {
+            background: #3949ab;
+        }
+        img.preview {
+            max-width: 340px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        pre {
+            white-space: pre-wrap;
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .chunk {
+            border-left: 4px solid #999;
+            padding-left: 12px;
+            margin: 12px 0;
+        }
+        .muted {
+            color: #666;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #e7f5ee;
+            border: 1px solid #b7dfc9;
+            font-weight: bold;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>EcoAsistente Multimodal</h1>
+    <p class="muted">
+        Prototipo RAG multimodal secuencial para clasificacion contextualizada de residuos.
+    </p>
+</header>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div>{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<section class="card">
+    <h2>Estado del indice documental</h2>
+    <p>Chunks indexados actualmente: <strong>{{ vector_count }}</strong></p>
+    <form action="{{ url_for('reindex') }}" method="post">
+        <button class="secondary" type="submit">Reconstruir indice desde data/docs</button>
+    </form>
+    <p class="muted">
+        Antes de analizar imagenes, agregar documentos a <code>data/docs</code> y reconstruir el indice.
+    </p>
+</section>
+
+<section class="card">
+    <h2>Analizar residuo</h2>
+    <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data">
+        <label for="image">Imagen del residuo</label>
+        <input id="image" name="image" type="file" accept="image/*" required>
+
+        <p class="muted">
+            El sistema analizara la imagen automaticamente con el modelo de vision configurado en Gemini API.
+            La imagen se optimiza antes de enviarse a la API para reducir latencia y consumo de cuota.
+        </p>
+
+        <label for="question">Consulta o contexto adicional opcional</label>
+        <textarea id="question" name="question" placeholder="Ejemplo: esta botella tenia aceite, ¿se puede reciclar?"></textarea>
+
+        <button type="submit">Analizar residuo</button>
+    </form>
+</section>
+
+{% if image_url %}
+<section class="card">
+    <h2>Imagen analizada</h2>
+    <img class="preview" src="{{ image_url }}" alt="Imagen subida">
+</section>
+{% endif %}
+
+{% if result %}
+<section class="card">
+    <h2>Respuesta final</h2>
+    <pre>{{ result.final_answer }}</pre>
+</section>
+
+<section class="card">
+    <h2>Confianza operacional</h2>
+    <p>
+        <span class="badge">Confianza: {{ result.confidence.label }}</span>
+        <span class="badge">Score: {{ result.confidence.score }}</span>
+    </p>
+    <div class="grid">
+        <div><strong>Confianza visual:</strong> {{ result.confidence.visual_confidence }}</div>
+        <div><strong>Chunks recuperados:</strong> {{ result.confidence.retrieved_chunks_count }}</div>
+        <div><strong>Mejor similitud aprox.:</strong> {{ result.confidence.best_similarity_approx }}</div>
+        <div><strong>Similitud media aprox.:</strong> {{ result.confidence.avg_similarity_approx }}</div>
+    </div>
+    <h3>Motivos</h3>
+    <ul>
+        {% for reason in result.confidence.reasons %}
+            <li>{{ reason }}</li>
+        {% endfor %}
+    </ul>
+</section>
+
+{% if result.answer_evaluation %}
+<section class="card">
+    <h2>Evaluador simple de respuesta</h2>
+    <div class="grid">
+        <div><strong>Respuesta aprobada:</strong> {{ result.answer_evaluation.respuesta_aprobada }}</div>
+        <div><strong>Riesgo de alucinacion:</strong> {{ result.answer_evaluation.riesgo_alucinacion }}</div>
+        <div><strong>Usa fuentes:</strong> {{ result.answer_evaluation.usa_fuentes }}</div>
+        <div><strong>Requiere revision humana:</strong> {{ result.answer_evaluation.requiere_revision_humana }}</div>
+    </div>
+    <h3>Advertencias</h3>
+    <ul>
+        {% for warning in result.answer_evaluation.advertencias %}
+            <li>{{ warning }}</li>
+        {% endfor %}
+    </ul>
+    <p><strong>Comentario:</strong> {{ result.answer_evaluation.comentario_evaluador }}</p>
+</section>
+{% endif %}
+
+<section class="card">
+    <h2>Tiempos de ejecucion</h2>
+    <pre>{{ result.timings }}</pre>
+</section>
+
+<section class="card">
+    <h2>Analisis visual estructurado</h2>
+    <pre>{{ result.visual_analysis }}</pre>
+</section>
+
+<section class="card">
+    <h2>Consulta generada para RAG</h2>
+    <pre>{{ result.rag_query }}</pre>
+</section>
+
+<section class="card">
+    <h2>Fragmentos documentales recuperados</h2>
+    {% for chunk in result.retrieved_chunks %}
+        <div class="chunk">
+            <strong>Fuente:</strong> {{ chunk.source }}
+            {% if chunk.page %} | <strong>Pagina:</strong> {{ chunk.page }}{% endif %}
+            <br>
+            <strong>Distancia vectorial:</strong> {{ chunk.distance }}
+            <p>{{ chunk.text }}</p>
+        </div>
+    {% endfor %}
+</section>
+
+<section class="card">
+    <h2>Feedback del usuario</h2>
+    <form action="{{ url_for('feedback') }}" method="post">
+        <input type="hidden" name="log_path" value="{{ result.log_path }}">
+        <label for="rating">Evaluacion de la recomendacion</label>
+        <select id="rating" name="rating" required>
+            <option value="correcta">Correcta / util</option>
+            <option value="dudosa">Dudosa</option>
+            <option value="incorrecta">Incorrecta</option>
+        </select>
+        <label for="comment">Comentario opcional</label>
+        <textarea id="comment" name="comment" placeholder="Ejemplo: la respuesta fue util, pero faltó aclarar el contenedor."></textarea>
+        <button type="submit">Guardar feedback</button>
+    </form>
+</section>
+
+<section class="card">
+    <h2>Log de la interaccion</h2>
+    <p>{{ result.log_path }}</p>
+</section>
+{% endif %}
+
+</body>
+</html>

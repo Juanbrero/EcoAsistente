@@ -1,0 +1,185 @@
+id,image_path,status,expected_category,predicted_object,predicted_category,confidence_label,risk_hallucination,requires_human_review,total_seconds,log_path,expected_result,final_answer,error
+1,tests/images/botella_pet.jpeg,OK,reciclable seco,varias botellas y envases de vidrio de diferentes tamaños y colores,reciclable seco,alta,bajo,False,9.093,logs\interaction_20260620_172747.json,"Debe identificar una botella plástica/PET y recomendar vaciar, lavar o enjuagar si corresponde, secar y disponer como reciclable seco según la guía local.","Aquí tienes la clasificación y recomendaciones para tus envases de vidrio:
+
+1.  **Clasificación probable del residuo:** Reciclable seco (vidrio).
+
+2.  **Tratamiento previo recomendado:** Sí, se recomienda que los envases de vidrio estén limpios.
+
+3.  **Disposición sugerida:** Deben ser depositados en el contenedor de reciclables secos, generalmente el de vidrio, si tu localidad cuenta con uno diferenciado.
+
+4.  **Justificación basada en los fragmentos recuperados:** El Fragmento 1 indica claramente que ""Los envases de vidrio limpios y sin restos peligrosos suelen ser reciclables"". La imagen muestra envases limpios, lo que apoya esta clasificación.
+
+5.  **Advertencias o incertidumbres:**
+    *   Si alguno de los envases hubiera contenido sustancias peligrosas (como aceites, pinturas, solventes, medicamentos), no debería tratarse como vidrio reciclable común y requeriría un tratamiento especial (Fragmento 3). Sin embargo, la descripción visual no sugiere esto.
+    *   El Fragmento 1 también menciona que ""No todos los vidrios tienen el mismo tratamiento: espejos, lámparas, cerámicas y vidrios especiales pueden requerir circuitos diferenciados"". Asegúrate de que los envases sean de vidrio común y no de estos tipos especiales.
+    *   Aunque la imagen muestra los envases limpios, la pregunta del usuario sobre lavarlos sugiere que podrían no estarlo. Es importante que estén limpios para su reciclabilidad.
+
+6.  **Fuentes consultadas en formato breve:** corpus_materiales.md (Fragmentos 1, 2, 3).",
+2,tests/images/Carton.jpeg,OK,reciclable seco,cajas de cartón apiladas,reciclable seco,alta,bajo,False,8.376,logs\interaction_20260620_172756.json,"Debe indicar que el cartón limpio y seco puede disponerse como reciclable seco; debe advertir que si está húmedo, grasoso o contaminado no corresponde reciclarlo como cartón limpio.","Aquí tienes la información sobre el reciclaje de tu cartón:
+
+1.  **Clasificación probable del residuo:** Reciclable seco.
+
+2.  **Tratamiento previo recomendado:**
+    *   Asegúrate de que las cajas estén limpias y secas.
+    *   Pliega o apila las cajas para reducir su volumen.
+    *   Si la cinta adhesiva es mínima, no debería ser un problema, pero si es abundante, podría ser mejor retirarla si es fácil de hacer.
+
+3.  **Disposición sugerida:** Deposítalo en el contenedor de reciclables secos, generalmente el de papel y cartón.
+
+4.  **Justificación basada en los fragmentos recuperados:**
+    Los fragmentos indican claramente que ""El papel y el cartón limpios y secos pueden clasificarse como reciclables secos"" (Fragmento 2). También mencionan que ""El cartón con restos abundantes de comida, grasa o humedad pierde valor de reciclabilidad"" (Fragmento 1 y 2), lo que implica que el cartón sin estas características es apto para reciclaje.
+
+5.  **Advertencias o incertidumbres:**
+    La imagen muestra cajas secas y con algunos restos de cinta. Si la cinta adhesiva fuera muy abundante o si las cajas tuvieran manchas de grasa o comida que no se aprecian bien en la imagen, su reciclabilidad podría verse afectada. En esos casos, si los restos son abundantes, podría requerir disposición como residuo no reciclable o fracción húmeda, según la normativa local.
+
+6.  **Fuentes consultadas en formato breve:**
+    *   corpus_materiales.md (Fragmento 1)
+    *   corpus_materiales.md (Fragmento 2)",
+3,tests/images/CartonPapel.jpeg,ERROR,reciclable seco,,,,,,4.481,,Debe reconocer papel/cartón y recomendar disponerlo como reciclable seco si está limpio y seco; debe mencionar que papeles sucios o contaminados no deben mezclarse con reciclables.,,"Gemini API fallo durante generateContent. Status HTTP: 429. Detalle: {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 57.525735296s."",
+    ""status"": ""RESOURCE_EXHAUSTED"",
+    ""details"": [
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.Help"",
+        ""links"": [
+          {
+            ""description"": ""Learn more about Gemini API quotas"",
+            ""url"": ""https://ai.google.dev/gemini-api/docs/rate-limits""
+          }
+        ]
+      },
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.QuotaFailure"",
+        ""violations"": [
+          {
+            ""quotaMetric"": ""generativelanguage.googleapis.com/generate_content_free_tier_requests"",
+            ""quotaId"": ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier"",
+            ""quotaDimensions"": {
+              ""location"": ""global"",
+              ""model"": ""gemini-2.5-flash""
+            },
+            ""quotaValue"": ""5""
+          }
+        ]
+      },
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.RetryInfo"",
+        ""retryDelay"": ""57s""
+      }
+    ]
+  }
+}
+"
+4,tests/images/Organicos.jpeg,ERROR,orgánico,,,,,,1.04,,"Debe identificar residuos orgánicos o restos biodegradables y recomendar compostaje o disposición como residuo orgánico/húmedo, evitando clasificarlos como reciclables secos.",,"Gemini API fallo durante generateContent. Status HTTP: 429. Detalle: {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 56.484873152s."",
+    ""status"": ""RESOURCE_EXHAUSTED"",
+    ""details"": [
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.Help"",
+        ""links"": [
+          {
+            ""description"": ""Learn more about Gemini API quotas"",
+            ""url"": ""https://ai.google.dev/gemini-api/docs/rate-limits""
+          }
+        ]
+      },
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.QuotaFailure"",
+        ""violations"": [
+          {
+            ""quotaMetric"": ""generativelanguage.googleapis.com/generate_content_free_tier_requests"",
+            ""quotaId"": ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier"",
+            ""quotaDimensions"": {
+              ""location"": ""global"",
+              ""model"": ""gemini-2.5-flash""
+            },
+            ""quotaValue"": ""5""
+          }
+        ]
+      },
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.RetryInfo"",
+        ""retryDelay"": ""56s""
+      }
+    ]
+  }
+}
+"
+5,tests/images/Varios.jpeg,ERROR,mixto / requiere separación,,,,,,4.608,,"Debe advertir que hay residuos de materiales diversos, recomendar separar por material y estado, y no dar una única categoría si la imagen es ambigua o contiene objetos heterogéneos.",,"Gemini API fallo durante generateContent. Status HTTP: 429. Detalle: {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 51.875179247s."",
+    ""status"": ""RESOURCE_EXHAUSTED"",
+    ""details"": [
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.Help"",
+        ""links"": [
+          {
+            ""description"": ""Learn more about Gemini API quotas"",
+            ""url"": ""https://ai.google.dev/gemini-api/docs/rate-limits""
+          }
+        ]
+      },
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.QuotaFailure"",
+        ""violations"": [
+          {
+            ""quotaMetric"": ""generativelanguage.googleapis.com/generate_content_free_tier_requests"",
+            ""quotaId"": ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier"",
+            ""quotaDimensions"": {
+              ""location"": ""global"",
+              ""model"": ""gemini-2.5-flash""
+            },
+            ""quotaValue"": ""5""
+          }
+        ]
+      },
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.RetryInfo"",
+        ""retryDelay"": ""51s""
+      }
+    ]
+  }
+}
+"
+6,tests/images/VidrioPlastico.jpeg,ERROR,reciclable seco con separación,,,,,,1.252,,"Debe reconocer presencia de vidrio y plástico, recomendar separarlos si son componentes distintos, verificar que estén limpios y secos, y disponerlos según las categorías reciclables correspondientes.",,"Gemini API fallo durante generateContent. Status HTTP: 429. Detalle: {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 50.617694761s."",
+    ""status"": ""RESOURCE_EXHAUSTED"",
+    ""details"": [
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.Help"",
+        ""links"": [
+          {
+            ""description"": ""Learn more about Gemini API quotas"",
+            ""url"": ""https://ai.google.dev/gemini-api/docs/rate-limits""
+          }
+        ]
+      },
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.QuotaFailure"",
+        ""violations"": [
+          {
+            ""quotaMetric"": ""generativelanguage.googleapis.com/generate_content_free_tier_requests"",
+            ""quotaId"": ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier"",
+            ""quotaDimensions"": {
+              ""location"": ""global"",
+              ""model"": ""gemini-2.5-flash""
+            },
+            ""quotaValue"": ""5""
+          }
+        ]
+      },
+      {
+        ""@type"": ""type.googleapis.com/google.rpc.RetryInfo"",
+        ""retryDelay"": ""50s""
+      }
+    ]
+  }
+}
+"
