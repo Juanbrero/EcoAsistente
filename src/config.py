@@ -14,8 +14,13 @@ import os
 from dataclasses import dataclass
 from dotenv import load_dotenv
 
+# 1. 🔥 CAPTURA PREVIA DEL ENTORNO REAL (Hugging Face Secrets)
+# Guardamos los tokens reales inyectados por la nube antes de que ocurra cualquier lectura de archivos.
+hf_gemini_key = os.environ.get("GEMINI_API_KEY")
+hf_flask_key = os.environ.get("FLASK_SECRET_KEY")
 
-# Carga variables desde un archivo .env si existe.
+# 2. CARGA DEL ARCHIVO .env
+# Esto carga de forma segura todos los modelos, rutas, tamaños de chunks y solapamientos.
 load_dotenv()
 
 
@@ -23,63 +28,43 @@ load_dotenv()
 class Settings:
     """Agrupa toda la configuracion necesaria del prototipo."""
 
-    # API key de Gemini. Se obtiene desde Google AI Studio.
-    # No debe escribirse dentro del codigo fuente ni subirse a repositorios publicos.
-    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    # 3. PRIORIDAD ABSOLUTA DE CREDENCIALES
+    # Si Hugging Face inyectó el token en el sistema operativo, usamos ese (hf_gemini_key).
+    # Si no (entorno local), usamos lo que haya leído load_dotenv() del archivo .env.
+    gemini_api_key: str = (hf_gemini_key or os.environ.get("GEMINI_API_KEY") or "").strip()
+    flask_secret_key: str = (hf_flask_key or os.environ.get("FLASK_SECRET_KEY") or "").strip()
 
-    # Endpoint REST de Gemini API.
-    # Se deja configurable por si Google cambia version o si se usa un entorno proxy.
+    # 4. CONFIGURACIONES GENERALES (Se leen del .env o usan el fallback de la derecha)
     gemini_api_base_url: str = os.getenv(
         "GEMINI_API_BASE_URL",
         "https://generativelanguage.googleapis.com/v1beta",
     )
-
-    # Modelo multimodal usado para analizar la imagen y para generar la respuesta final.
-    # Gemini acepta imagen + texto como entrada en generateContent.
     gemini_vision_model: str = os.getenv("GEMINI_VISION_MODEL", "gemini-2.5-flash")
     gemini_text_model: str = os.getenv("GEMINI_TEXT_MODEL", "gemini-2.5-flash")
-
-    # Modelo de embeddings para RAG.
-    # gemini-embedding-001 es un modelo estable para busqueda semantica/document retrieval.
     gemini_embedding_model: str = os.getenv("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001")
-
-    # Dimension de salida de embeddings. Usar una dimension fija evita inconsistencias en Chroma.
     gemini_embedding_dim: int = int(os.getenv("GEMINI_EMBEDDING_DIM", "768"))
 
-    # Rutas del proyecto.
+    # Rutas del proyecto
     docs_dir: str = os.getenv("DOCS_DIR", "data/docs")
     vectorstore_dir: str = os.getenv("VECTORSTORE_DIR", "data/vectorstore")
     upload_dir: str = os.getenv("UPLOAD_DIR", "static/uploads")
     log_dir: str = os.getenv("LOG_DIR", "logs")
 
-    # Parametros RAG.
+    # Parametros RAG
     chunk_size: int = int(os.getenv("CHUNK_SIZE", "900"))
     chunk_overlap: int = int(os.getenv("CHUNK_OVERLAP", "150"))
     top_k: int = int(os.getenv("TOP_K", "4"))
 
-    # Flask utiliza esta clave para firmar sesiones y mensajes internos.
-    # No es una API key externa. Debe ser una cadena aleatoria propia.
-    flask_secret_key: str = os.environ.get("FLASK_SECRET_KEY")
-
-    # Timeouts para llamadas remotas a Gemini API.
+    # Timeouts y componentes de auditoría
     vision_timeout_seconds: int = int(os.getenv("VISION_TIMEOUT_SECONDS", "60"))
     text_timeout_seconds: int = int(os.getenv("TEXT_TIMEOUT_SECONDS", "90"))
     embedding_timeout_seconds: int = int(os.getenv("EMBEDDING_TIMEOUT_SECONDS", "60"))
-
-    # Componentes de evaluacion/auditoria.
-    # ENABLE_ANSWER_EVALUATOR agrega una llamada extra al modelo para auditar la respuesta.
     enable_answer_evaluator: bool = os.getenv("ENABLE_ANSWER_EVALUATOR", "true").lower() == "true"
-
-    # Carpeta donde se guardan resultados de evaluaciones offline y feedback.
     outputs_dir: str = os.getenv("OUTPUTS_DIR", "outputs")
 
 
 def validate_settings() -> None:
-    """
-    Valida configuraciones obligatorias al iniciar la aplicacion.
-
-    Se falla temprano con mensajes claros para evitar errores confusos durante la demo.
-    """
+    """Valida configuraciones obligatorias al iniciar la aplicacion."""
     missing = []
     if not settings.gemini_api_key:
         missing.append("GEMINI_API_KEY")
@@ -88,9 +73,9 @@ def validate_settings() -> None:
 
     if missing:
         raise RuntimeError(
-            "Faltan variables obligatorias en .env: "
+            "Faltan variables obligatorias o están vacías: "
             + ", ".join(missing)
-            + ". Revisar .env.example."
+            + ". Verificar los Secrets en la configuración de Hugging Face o el archivo .env."
         )
 
 
