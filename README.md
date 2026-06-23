@@ -1,3 +1,12 @@
+---
+title: EcoAsistente Multimodal
+emoji: ♻️
+colorFrom: green
+colorTo: emerald
+sdk: docker
+pinned: false
+---
+
 # EcoAsistente Multimodal - RAG con Gemini API - HuggingFace
 
 Prototipo Flask para clasificacion contextualizada de residuos mediante una arquitectura RAG multimodal secuencial.
