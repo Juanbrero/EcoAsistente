@@ -25,7 +25,7 @@ class Settings:
 
     # API key de Gemini. Se obtiene desde Google AI Studio.
     # No debe escribirse dentro del codigo fuente ni subirse a repositorios publicos.
-    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
     # Endpoint REST de Gemini API.
     # Se deja configurable por si Google cambia version o si se usa un entorno proxy.
@@ -59,7 +59,7 @@ class Settings:
 
     # Flask utiliza esta clave para firmar sesiones y mensajes internos.
     # No es una API key externa. Debe ser una cadena aleatoria propia.
-    flask_secret_key: str = os.getenv("FLASK_SECRET_KEY", "")
+    flask_secret_key: str = os.environ.get("FLASK_SECRET_KEY")
 
     # Timeouts para llamadas remotas a Gemini API.
     vision_timeout_seconds: int = int(os.getenv("VISION_TIMEOUT_SECONDS", "60"))
