@@ -1,32 +1,33 @@
 """
 app.py
 ------
-Aplicacion Flask del EcoAsistente Multimodal.
+Interfaz Flask del EcoAsistente Multimodal.
 
-Esta es la entrada principal del prototipo. Permite:
-- subir una imagen de un residuo;
-- ejecutar el pipeline RAG multimodal automatico;
-- ver el analisis visual, los fragmentos recuperados y la respuesta final;
-- ver confianza operacional y auditoria del evaluador simple;
-- registrar feedback del usuario;
-- reconstruir el indice vectorial desde la interfaz.
+Esta version publica esta pensada para despliegue en Hugging Face:
+- permite subir una imagen de un residuo;
+- ejecuta el pipeline RAG multimodal automatico;
+- muestra una recomendacion clara para el usuario;
+- expone detalles tecnicos de trazabilidad para evaluacion academica;
+- registra feedback del usuario;
+- NO permite reconstruir el indice desde la interfaz.
 
-Ejecucion:
-    python app.py
-Luego abrir:
-    http://127.0.0.1:5000
+El indice vectorial debe generarse previamente en entorno local y subirse junto
+con el proyecto en data/vectorstore.
 """
 
 from __future__ import annotations
 
 import os
 from pathlib import Path
+
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
+
 from src.config import settings, validate_settings
 from src.rag_engine import EcoAsistenteRAG
 from src.vector_store import VectorStore
 from src.feedback import save_feedback
+from src.trace_reader import list_trace_logs, load_trace
 
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
@@ -37,10 +38,7 @@ validate_settings()
 app = Flask(__name__)
 app.secret_key = settings.flask_secret_key
 
-# Aseguramos que existan las carpetas necesarias.
 Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
-Path(settings.docs_dir).mkdir(parents=True, exist_ok=True)
-Path(settings.vectorstore_dir).mkdir(parents=True, exist_ok=True)
 Path(settings.log_dir).mkdir(parents=True, exist_ok=True)
 Path(settings.outputs_dir).mkdir(parents=True, exist_ok=True)
 
@@ -52,31 +50,34 @@ def allowed_file(filename: str) -> bool:
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    """Pantalla principal: formulario de carga y resultados."""
+    """Pantalla principal: carga de imagen, analisis y resultados."""
     result = None
     image_url = None
-    vector_count = VectorStore().count()
+
+    try:
+        vector_count = VectorStore().count()
+    except Exception:
+        vector_count = 0
 
     if request.method == "POST":
         uploaded_file = request.files.get("image")
         user_question = request.form.get("question", "").strip() or None
 
         if uploaded_file is None or uploaded_file.filename == "":
-            flash("Debe subirse una imagen del residuo.")
+            flash("Subí una imagen del residuo para poder analizarlo.")
             return redirect(url_for("index"))
 
         if not allowed_file(uploaded_file.filename):
-            flash("Formato no soportado. Usar PNG, JPG, JPEG o WEBP.")
+            flash("Formato no soportado. Usá una imagen PNG, JPG, JPEG o WEBP.")
             return redirect(url_for("index"))
 
         filename = secure_filename(uploaded_file.filename)
         image_path = os.path.join(settings.upload_dir, filename)
         uploaded_file.save(image_path)
+
         image_url = url_for("static", filename=f"uploads/{filename}")
 
         try:
-            # El pipeline ejecuta siempre el modo automatico:
-            # imagen -> modelo de vision remoto -> RAG -> respuesta final -> auditoria.
             pipeline = EcoAsistenteRAG()
             result = pipeline.answer(
                 image_path=image_path,
@@ -84,8 +85,10 @@ def index():
                 user_question=user_question,
             )
         except Exception as exc:
-            # En una demo academica conviene mostrar un error claro en vez de fallar silenciosamente.
-            flash(f"Error durante el analisis: {exc}")
+            flash(
+                "No se pudo completar el análisis. "
+                f"Detalle técnico: {exc}"
+            )
 
     return render_template(
         "index.html",
@@ -95,42 +98,49 @@ def index():
     )
 
 
-@app.route("/reindex", methods=["POST"])
-def reindex():
-    """
-    Reconstruye el indice vectorial desde los documentos en data/docs.
-
-    Esta accion es util durante la demo: si se agregan o modifican documentos,
-    se puede reindexar sin ejecutar scripts externos.
-    """
-    try:
-        vector_store = VectorStore()
-        count = vector_store.index_documents(reset=True)
-        flash(f"Indice reconstruido correctamente. Chunks indexados: {count}")
-    except Exception as exc:
-        flash(f"No se pudo reconstruir el indice: {exc}")
-
-    return redirect(url_for("index"))
-
-
 @app.route("/feedback", methods=["POST"])
 def feedback():
     """Registra feedback del usuario sobre la recomendacion generada."""
     rating = request.form.get("rating", "").strip()
     comment = request.form.get("comment", "").strip()
     log_path = request.form.get("log_path", "").strip()
+    error_category = request.form.get("error_category", "").strip()
 
     if rating not in {"correcta", "dudosa", "incorrecta"}:
-        flash("Feedback invalido.")
+        flash("La valoración enviada no es válida.")
         return redirect(url_for("index"))
 
     try:
-        feedback_path = save_feedback(log_path=log_path, rating=rating, comment=comment)
-        flash(f"Feedback registrado correctamente en {feedback_path}")
+        save_feedback(
+            log_path=log_path,
+            rating=rating,
+            comment=comment,
+            error_category=error_category,
+        )
+        flash("Gracias. Tu feedback fue registrado para evaluación y mejora del sistema.")
     except Exception as exc:
-        flash(f"No se pudo registrar el feedback: {exc}")
+        flash(f"No se pudo registrar el feedback. Detalle técnico: {exc}")
 
     return redirect(url_for("index"))
+
+
+@app.route("/trace", methods=["GET"])
+def trace_index():
+    """Panel de trazabilidad: lista las ultimas interacciones registradas."""
+    traces = list_trace_logs(limit=30)
+    return render_template("trace.html", traces=traces)
+
+
+@app.route("/trace/<log_id>", methods=["GET"])
+def trace_detail(log_id: str):
+    """Detalle paso a paso de una interaccion registrada."""
+    try:
+        trace = load_trace(log_id)
+    except Exception as exc:
+        flash(f"No se pudo cargar la trazabilidad solicitada: {exc}")
+        return redirect(url_for("trace_index"))
+
+    return render_template("trace_detail.html", trace=trace)
 
 
 if __name__ == "__main__":

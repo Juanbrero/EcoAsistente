@@ -161,13 +161,23 @@ Abrir en navegador:
 http://127.0.0.1:5000
 ```
 
-## 9. Uso de la interfaz
+## 9. Uso de la interfaz desplegada
 
-1. Cargar documentos en `data/docs`.
-2. Presionar **Reconstruir indice desde data/docs**.
-3. Subir una imagen de un residuo.
-4. Agregar una consulta opcional, por ejemplo: `¿Debo lavarlo antes de descartarlo?`.
-5. Presionar **Analizar residuo**.
+La aplicación desplegada en Hugging Face utiliza un índice vectorial previamente construido
+en `data/vectorstore`. Por ese motivo, la interfaz pública no permite cargar documentos ni
+reconstruir el índice dinámicamente.
+
+Flujo de uso:
+
+1. Subir una imagen clara del residuo.
+2. Agregar una consulta opcional si el caso requiere contexto adicional.
+3. Presionar **Analizar residuo**.
+4. Revisar la recomendación final.
+5. Opcionalmente, abrir las secciones de trazabilidad para ver análisis visual, consulta RAG,
+   fragmentos recuperados, confianza operacional y auditoría automática.
+
+Para modificar la base documental, se debe reconstruir el índice en entorno local y luego
+subir nuevamente `data/vectorstore` al despliegue.
 
 El sistema mostrara:
 

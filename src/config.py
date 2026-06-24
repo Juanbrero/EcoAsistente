@@ -14,20 +14,8 @@ import os
 from dataclasses import dataclass
 from dotenv import load_dotenv
 
-# 🔍 BLOQUE DE DIAGNÓSTICO SEGURO (Solo lista los nombres, nunca los valores)
-print("\n=== [DIAGNÓSTICO] VARIABLES DETECTADAS POR DOCKER ===", flush=True)
-for key in sorted(os.environ.keys()):
-    if "GEMINI" in key or "SECRET" in key or "KEY" in key:
-        print(f"-> Clave detectada en el OS: '{key}' (Largo del valor: {len(os.environ[key])})", flush=True)
-print("====================================================\n", flush=True)
-
-# 1. 🔥 CAPTURA PREVIA DEL ENTORNO REAL (Hugging Face Secrets)
-# Guardamos los tokens reales inyectados por la nube antes de que ocurra cualquier lectura de archivos.
 hf_gemini_key = os.environ.get("GEMINI_API_KEY")
-print("prueba")
-print(hf_gemini_key[:3])
 hf_flask_key = os.environ.get("FLASK_SECRET_KEY")
-print(hf_flask_key[:3])
 
 # 2. CARGA DEL ARCHIVO .env
 # Esto carga de forma segura todos los modelos, rutas, tamaños de chunks y solapamientos.

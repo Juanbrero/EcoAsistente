@@ -4,242 +4,669 @@
     <meta charset="utf-8">
     <title>EcoAsistente Multimodal</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <style>
+        :root {
+            --bg: #f3f7f2;
+            --surface: #ffffff;
+            --surface-soft: #f8fbf7;
+            --primary: #16794c;
+            --primary-dark: #0f5c39;
+            --accent: #dff4e8;
+            --text: #1f2933;
+            --muted: #667085;
+            --border: #d9e5dc;
+            --warning-bg: #fff7e6;
+            --warning-border: #ffd591;
+            --radius-lg: 22px;
+            --radius-md: 14px;
+            --shadow: 0 18px 45px rgba(22, 121, 76, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 1050px;
-            margin: 32px auto;
-            padding: 0 16px;
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(22, 121, 76, 0.16), transparent 34rem),
+                linear-gradient(180deg, #f3f7f2 0%, #eef5ec 100%);
+            color: var(--text);
             line-height: 1.5;
-            color: #1f2933;
         }
-        header {
-            border-bottom: 1px solid #ddd;
+
+        .page {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 34px 0 52px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+            gap: 24px;
+            align-items: stretch;
             margin-bottom: 24px;
-            padding-bottom: 12px;
         }
+
+        .hero-main,
+        .hero-side,
         .card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 16px;
-            margin: 16px 0;
-            background: #fafafa;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
         }
-        .messages {
-            color: #8a4b00;
-            background: #fff7e6;
-            border: 1px solid #ffd591;
-            padding: 12px;
-            border-radius: 8px;
+
+        .hero-main {
+            padding: 34px;
         }
+
+        .hero-side {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: var(--accent);
+            color: var(--primary-dark);
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3.8rem);
+            letter-spacing: -0.045em;
+            line-height: 0.98;
+        }
+
+        h2 {
+            margin: 0 0 12px;
+            letter-spacing: -0.02em;
+        }
+
+        h3 {
+            margin: 18px 0 8px;
+        }
+
+        p {
+            margin: 0 0 12px;
+        }
+
+        a {
+            color: var(--primary);
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .lead {
+            max-width: 780px;
+            margin-top: 18px;
+            color: var(--muted);
+            font-size: 1.08rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 13px;
+            border-radius: 999px;
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .top-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .top-links a {
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 13px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface-soft);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .card {
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-card {
+            position: sticky;
+            top: 18px;
+        }
+
         label {
             display: block;
-            font-weight: bold;
+            font-weight: 800;
+            margin: 18px 0 8px;
+        }
+
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 13px 14px;
+            background: #fff;
+            color: var(--text);
+            font: inherit;
+        }
+
+        input[type="file"] {
+            cursor: pointer;
+        }
+
+        textarea {
+            min-height: 112px;
+            resize: vertical;
+        }
+
+        .help {
+            font-size: 0.92rem;
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .button {
+            width: 100%;
+            margin-top: 18px;
+            padding: 14px 18px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            background: var(--primary);
+            color: white;
+            font-weight: 900;
+            font-size: 1rem;
+            transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+            box-shadow: 0 10px 22px rgba(22, 121, 76, 0.24);
+        }
+
+        .button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .button.secondary {
+            background: #344054;
+            box-shadow: none;
+        }
+
+        .messages {
+            color: #7a4100;
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            margin-bottom: 22px;
+            font-weight: 650;
+        }
+
+        .preview-wrap {
+            display: grid;
+            gap: 12px;
+        }
+
+        img.preview {
+            width: 100%;
+            max-height: 420px;
+            object-fit: contain;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: #fff;
+        }
+
+        .answer {
+            background: linear-gradient(180deg, #ffffff 0%, #f6fbf8 100%);
+            border: 1px solid #bfe4cf;
+        }
+
+        .answer-text {
+            white-space: pre-wrap;
+            font-size: 1.02rem;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px;
             margin-top: 12px;
         }
-        input[type="file"], textarea {
-            width: 100%;
-            margin-top: 6px;
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
         }
-        textarea {
-            min-height: 80px;
+
+        .metric {
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px;
         }
-        button {
-            margin-top: 16px;
-            padding: 10px 14px;
-            border: none;
-            border-radius: 6px;
+
+        .metric strong {
+            display: block;
+            font-size: 0.84rem;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: var(--accent);
+            border: 1px solid #b7dfc9;
+            color: var(--primary-dark);
+            font-weight: 900;
+            margin: 4px 6px 4px 0;
+        }
+
+        details {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            background: #fff;
+            margin-top: 12px;
+        }
+
+        summary {
             cursor: pointer;
-            background: #1f7a4d;
-            color: white;
-            font-weight: bold;
+            font-weight: 900;
+            color: var(--primary-dark);
         }
-        button.secondary {
-            background: #3949ab;
-        }
-        img.preview {
-            max-width: 340px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
+
         pre {
             white-space: pre-wrap;
-            background: #f0f0f0;
-            padding: 12px;
-            border-radius: 8px;
+            word-break: break-word;
+            background: #f5f7f5;
+            padding: 14px;
+            border-radius: var(--radius-md);
             overflow-x: auto;
+            border: 1px solid var(--border);
         }
+
         .chunk {
-            border-left: 4px solid #999;
-            padding-left: 12px;
-            margin: 12px 0;
+            border-left: 5px solid var(--primary);
+            background: #f8fbf7;
+            padding: 14px 16px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            margin: 14px 0;
         }
-        .muted {
-            color: #666;
-        }
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 999px;
-            background: #e7f5ee;
-            border: 1px solid #b7dfc9;
-            font-weight: bold;
-        }
-        .grid {
+
+        .feedback-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 42px 22px;
+            border: 1px dashed #b8c9bd;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.68);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .small-note {
+            font-size: 0.86rem;
+            color: var(--muted);
+        }
+
+        .trace-callout {
+            background: #eef8f1;
+            border: 1px solid #bfe4cf;
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 860px) {
+            .hero,
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .form-card {
+                position: static;
+            }
+
+            .hero-main {
+                padding: 26px;
+            }
         }
     </style>
 </head>
+
 <body>
-<header>
-    <h1>EcoAsistente Multimodal</h1>
-    <p class="muted">
-        Prototipo RAG multimodal secuencial para clasificacion contextualizada de residuos.
-    </p>
-</header>
+<div class="page">
 
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div>{{ message }}</div>
-            {% endfor %}
+    <section class="hero">
+        <div class="hero-main">
+            <div class="eyebrow">♻️ Asistente inteligente de reciclaje</div>
+            <h1>EcoAsistente Multimodal</h1>
+            <p class="lead">
+                Subí una foto de un residuo y el sistema combina análisis visual con recuperación documental
+                para recomendar cómo descartarlo de forma responsable.
+            </p>
+
+            <div class="top-links">
+                <a href="{{ url_for('trace_index') }}">Ver trazabilidad técnica</a>
+            </div>
         </div>
-    {% endif %}
-{% endwith %}
 
-<section class="card">
-    <h2>Estado del indice documental</h2>
-    <p>Chunks indexados actualmente: <strong>{{ vector_count }}</strong></p>
-    <form action="{{ url_for('reindex') }}" method="post">
-        <button class="secondary" type="submit">Reconstruir indice desde data/docs</button>
-    </form>
-    <p class="muted">
-        Antes de analizar imagenes, agregar documentos a <code>data/docs</code> y reconstruir el indice.
-    </p>
-</section>
+        <aside class="hero-side">
+            <div>
+                <h2>Base documental</h2>
+                <p class="muted">
+                    El índice RAG ya está precargado en el despliegue. No es necesario cargar documentos ni
+                    reconstruir la base desde esta interfaz.
+                </p>
+            </div>
 
-<section class="card">
-    <h2>Analizar residuo</h2>
-    <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data">
-        <label for="image">Imagen del residuo</label>
-        <input id="image" name="image" type="file" accept="image/*" required>
+            <div class="status-pill">
+                <span class="status-dot"></span>
+                {{ vector_count }} fragmentos disponibles
+            </div>
+        </aside>
+    </section>
 
-        <p class="muted">
-            El sistema analizara la imagen automaticamente con el modelo de vision configurado en Gemini API.
-            La imagen se optimiza antes de enviarse a la API para reducir latencia y consumo de cuota.
-        </p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div>{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
-        <label for="question">Consulta o contexto adicional opcional</label>
-        <textarea id="question" name="question" placeholder="Ejemplo: esta botella tenia aceite, ¿se puede reciclar?"></textarea>
+    <main class="layout">
+        <section class="card form-card">
+            <h2>Analizar un residuo</h2>
+            <p class="muted">
+                Usá una imagen clara, con buena luz y el objeto lo más centrado posible.
+            </p>
 
-        <button type="submit">Analizar residuo</button>
-    </form>
-</section>
+            <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data" id="analysis-form">
+                <label for="image">Imagen del residuo</label>
+                <input id="image" name="image" type="file" accept="image/*" required>
+                <p class="help">
+                    Formatos admitidos: PNG, JPG, JPEG o WEBP.
+                </p>
 
-{% if image_url %}
-<section class="card">
-    <h2>Imagen analizada</h2>
-    <img class="preview" src="{{ image_url }}" alt="Imagen subida">
-</section>
-{% endif %}
+                <label for="question">Contexto adicional opcional</label>
+                <textarea
+                    id="question"
+                    name="question"
+                    placeholder="Ejemplo: la botella tenía aceite, ¿igual se puede reciclar?"
+                ></textarea>
 
-{% if result %}
-<section class="card">
-    <h2>Respuesta final</h2>
-    <pre>{{ result.final_answer }}</pre>
-</section>
+                <button class="button" type="submit" id="submit-button">
+                    Analizar residuo
+                </button>
+            </form>
 
-<section class="card">
-    <h2>Confianza operacional</h2>
-    <p>
-        <span class="badge">Confianza: {{ result.confidence.label }}</span>
-        <span class="badge">Score: {{ result.confidence.score }}</span>
-    </p>
-    <div class="grid">
-        <div><strong>Confianza visual:</strong> {{ result.confidence.visual_confidence }}</div>
-        <div><strong>Chunks recuperados:</strong> {{ result.confidence.retrieved_chunks_count }}</div>
-        <div><strong>Mejor similitud aprox.:</strong> {{ result.confidence.best_similarity_approx }}</div>
-        <div><strong>Similitud media aprox.:</strong> {{ result.confidence.avg_similarity_approx }}</div>
-    </div>
-    <h3>Motivos</h3>
-    <ul>
-        {% for reason in result.confidence.reasons %}
-            <li>{{ reason }}</li>
-        {% endfor %}
-    </ul>
-</section>
+            <p class="small-note" style="margin-top: 14px;">
+                El sistema puede equivocarse si la imagen es ambigua o si la base documental no contiene una regla
+                específica para el caso.
+            </p>
+        </section>
 
-{% if result.answer_evaluation %}
-<section class="card">
-    <h2>Evaluador simple de respuesta</h2>
-    <div class="grid">
-        <div><strong>Respuesta aprobada:</strong> {{ result.answer_evaluation.respuesta_aprobada }}</div>
-        <div><strong>Riesgo de alucinacion:</strong> {{ result.answer_evaluation.riesgo_alucinacion }}</div>
-        <div><strong>Usa fuentes:</strong> {{ result.answer_evaluation.usa_fuentes }}</div>
-        <div><strong>Requiere revision humana:</strong> {{ result.answer_evaluation.requiere_revision_humana }}</div>
-    </div>
-    <h3>Advertencias</h3>
-    <ul>
-        {% for warning in result.answer_evaluation.advertencias %}
-            <li>{{ warning }}</li>
-        {% endfor %}
-    </ul>
-    <p><strong>Comentario:</strong> {{ result.answer_evaluation.comentario_evaluador }}</p>
-</section>
-{% endif %}
+        <section>
+            {% if image_url %}
+                <section class="card">
+                    <h2>Imagen analizada</h2>
+                    <div class="preview-wrap">
+                        <img class="preview" src="{{ image_url }}" alt="Imagen subida">
+                    </div>
+                </section>
+            {% endif %}
 
-<section class="card">
-    <h2>Tiempos de ejecucion</h2>
-    <pre>{{ result.timings }}</pre>
-</section>
+            {% if result %}
+                <section class="card answer">
+                    <h2>Recomendación final</h2>
+                    <div class="answer-text">{{ result.final_answer }}</div>
 
-<section class="card">
-    <h2>Analisis visual estructurado</h2>
-    <pre>{{ result.visual_analysis }}</pre>
-</section>
+                    <div class="trace-callout">
+                        <strong>¿Querés ver cómo llegó a esta respuesta?</strong>
+                        <p class="muted" style="margin-top: 6px;">
+                            La trazabilidad muestra el paso a paso: análisis visual, consulta RAG,
+                            fragmentos recuperados, respuesta, confianza y auditoría.
+                        </p>
+                        <a href="{{ url_for('trace_index') }}">Abrir panel de trazabilidad →</a>
+                    </div>
+                </section>
 
-<section class="card">
-    <h2>Consulta generada para RAG</h2>
-    <pre>{{ result.rag_query }}</pre>
-</section>
+                <section class="card">
+                    <h2>Confiabilidad de la respuesta</h2>
 
-<section class="card">
-    <h2>Fragmentos documentales recuperados</h2>
-    {% for chunk in result.retrieved_chunks %}
-        <div class="chunk">
-            <strong>Fuente:</strong> {{ chunk.source }}
-            {% if chunk.page %} | <strong>Pagina:</strong> {{ chunk.page }}{% endif %}
-            <br>
-            <strong>Distancia vectorial:</strong> {{ chunk.distance }}
-            <p>{{ chunk.text }}</p>
-        </div>
-    {% endfor %}
-</section>
+                    <span class="badge">Confianza: {{ result.confidence.label }}</span>
+                    <span class="badge">Score: {{ result.confidence.score }}</span>
 
-<section class="card">
-    <h2>Feedback del usuario</h2>
-    <form action="{{ url_for('feedback') }}" method="post">
-        <input type="hidden" name="log_path" value="{{ result.log_path }}">
-        <label for="rating">Evaluacion de la recomendacion</label>
-        <select id="rating" name="rating" required>
-            <option value="correcta">Correcta / util</option>
-            <option value="dudosa">Dudosa</option>
-            <option value="incorrecta">Incorrecta</option>
-        </select>
-        <label for="comment">Comentario opcional</label>
-        <textarea id="comment" name="comment" placeholder="Ejemplo: la respuesta fue util, pero faltó aclarar el contenedor."></textarea>
-        <button type="submit">Guardar feedback</button>
-    </form>
-</section>
+                    <div class="metrics">
+                        <div class="metric">
+                            <strong>Confianza visual</strong>
+                            {{ result.confidence.visual_confidence }}
+                        </div>
+                        <div class="metric">
+                            <strong>Fragmentos recuperados</strong>
+                            {{ result.confidence.retrieved_chunks_count }}
+                        </div>
+                        <div class="metric">
+                            <strong>Mejor similitud aprox.</strong>
+                            {{ result.confidence.best_similarity_approx }}
+                        </div>
+                        <div class="metric">
+                            <strong>Similitud media aprox.</strong>
+                            {{ result.confidence.avg_similarity_approx }}
+                        </div>
+                    </div>
 
-<section class="card">
-    <h2>Log de la interaccion</h2>
-    <p>{{ result.log_path }}</p>
-</section>
-{% endif %}
+                    <details>
+                        <summary>Ver motivos de confianza</summary>
+                        <ul>
+                            {% for reason in result.confidence.reasons %}
+                                <li>{{ reason }}</li>
+                            {% endfor %}
+                        </ul>
+                    </details>
+                </section>
 
+                {% if result.answer_evaluation %}
+                    <section class="card">
+                        <h2>Auditoría automática</h2>
+
+                        <div class="metrics">
+                            <div class="metric">
+                                <strong>Respuesta aprobada</strong>
+                                {{ result.answer_evaluation.respuesta_aprobada }}
+                            </div>
+                            <div class="metric">
+                                <strong>Riesgo de alucinación</strong>
+                                {{ result.answer_evaluation.riesgo_alucinacion }}
+                            </div>
+                            <div class="metric">
+                                <strong>Usa fuentes</strong>
+                                {{ result.answer_evaluation.usa_fuentes }}
+                            </div>
+                            <div class="metric">
+                                <strong>Requiere revisión humana</strong>
+                                {{ result.answer_evaluation.requiere_revision_humana }}
+                            </div>
+                        </div>
+
+                        <details>
+                            <summary>Ver advertencias y comentario del evaluador</summary>
+                            <h3>Advertencias</h3>
+                            <ul>
+                                {% for warning in result.answer_evaluation.advertencias %}
+                                    <li>{{ warning }}</li>
+                                {% endfor %}
+                            </ul>
+                            <p><strong>Comentario:</strong> {{ result.answer_evaluation.comentario_evaluador }}</p>
+                        </details>
+                    </section>
+                {% endif %}
+
+                <section class="card">
+                    <h2>Trazabilidad técnica</h2>
+                    <p class="muted">
+                        Esta información ayuda a defender el funcionamiento del sistema durante la evaluación.
+                    </p>
+
+                    <details>
+                        <summary>Análisis visual estructurado</summary>
+                        <pre>{{ result.visual_analysis }}</pre>
+                    </details>
+
+                    <details>
+                        <summary>Consulta generada para RAG</summary>
+                        <pre>{{ result.rag_query }}</pre>
+                    </details>
+
+                    <details>
+                        <summary>Fragmentos documentales recuperados</summary>
+                        {% for chunk in result.retrieved_chunks %}
+                            <div class="chunk">
+                                <strong>Fuente:</strong> {{ chunk.source }}
+                                {% if chunk.page %} | <strong>Página:</strong> {{ chunk.page }}{% endif %}
+                                <br>
+                                <strong>Distancia vectorial:</strong> {{ chunk.distance }}
+                                <p>{{ chunk.text }}</p>
+                            </div>
+                        {% endfor %}
+                    </details>
+
+                    <details>
+                        <summary>Tiempos de ejecución</summary>
+                        <pre>{{ result.timings }}</pre>
+                    </details>
+
+                    <details>
+                        <summary>Log de la interacción</summary>
+                        <p>{{ result.log_path }}</p>
+                    </details>
+                </section>
+
+                <section class="card">
+                    <h2>¿La recomendación fue útil?</h2>
+                    <p class="muted">
+                        El feedback no entrena automáticamente al modelo. Se guarda como evidencia humana
+                        para analizar errores y mejorar el corpus, los prompts o las reglas del sistema.
+                    </p>
+
+                    <form action="{{ url_for('feedback') }}" method="post">
+                        <input type="hidden" name="log_path" value="{{ result.log_path }}">
+
+                        <div class="feedback-grid">
+                            <label for="rating">Valoración</label>
+                            <select id="rating" name="rating" required>
+                                <option value="correcta">Correcta / útil</option>
+                                <option value="dudosa">Dudosa</option>
+                                <option value="incorrecta">Incorrecta</option>
+                            </select>
+
+                            <label for="error_category">Si hubo un problema, ¿cuál fue?</label>
+                            <select id="error_category" name="error_category">
+                                <option value="">No aplica</option>
+                                <option value="clasificacion_visual">Clasificación visual incorrecta</option>
+                                <option value="recuperacion_documental">No recuperó documentos relevantes</option>
+                                <option value="respuesta_confusa">Respuesta confusa o incompleta</option>
+                                <option value="normativa_incorrecta">Normativa o instrucción incorrecta</option>
+                                <option value="caso_ambiguo">Caso ambiguo</option>
+                                <option value="otro">Otro</option>
+                            </select>
+
+                            <label for="comment">Comentario opcional</label>
+                            <textarea
+                                id="comment"
+                                name="comment"
+                                placeholder="Ejemplo: la respuesta fue útil, pero faltó aclarar el contenedor."
+                            ></textarea>
+
+                            <button class="button secondary" type="submit">
+                                Guardar feedback
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            {% else %}
+                <section class="empty-state">
+                    <div class="icon">📷</div>
+                    <h2>Esperando una imagen</h2>
+                    <p class="muted">
+                        Subí una foto para obtener una recomendación de separación, preparación y disposición del residuo.
+                    </p>
+                </section>
+            {% endif %}
+        </section>
+    </main>
+</div>
+
+<script>
+    const form = document.getElementById("analysis-form");
+    const submitButton = document.getElementById("submit-button");
+
+    if (form && submitButton) {
+        form.addEventListener("submit", () => {
+            submitButton.disabled = true;
+            submitButton.textContent = "Analizando imagen...";
+            submitButton.style.opacity = "0.75";
+            submitButton.style.cursor = "wait";
+        });
+    }
+</script>
 </body>
 </html>
