@@ -16,13 +16,10 @@ con el proyecto en data/vectorstore.
 """
 
 from __future__ import annotations
-
 import os
 from pathlib import Path
-
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
-
 from src.config import settings, validate_settings
 from src.rag_engine import EcoAsistenteRAG
 from src.vector_store import VectorStore
