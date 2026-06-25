@@ -1,11 +1,13 @@
+data/docs/*
 .env
 __pycache__/
 *.pyc
 .DS_Store
 static/uploads/*
 !static/uploads/.gitkeep
-# data/vectorstore/*
+data/vectorstore/*
 !data/vectorstore/.gitkeep
+data/vectorstore.zip
 logs/*
 !logs/.gitkeep
 /.venv

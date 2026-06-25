@@ -13,8 +13,11 @@ mas cercanos. Esos chunks se pasan luego al LLM como contexto.
 """
 
 from __future__ import annotations
-
-from typing import Dict, List, Any
+import os
+import json
+import re
+from pathlib import Path
+from typing import Dict, List, Any, Optional
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 from .config import settings
@@ -49,7 +52,8 @@ class VectorStore:
         """
         Carga documentos desde data/docs, genera embeddings y los guarda en Chroma.
 
-        Devuelve la cantidad de chunks indexados.
+        La indexación se realiza por lotes para evitar timeouts, cortes por cuota
+        y para mostrar progreso durante la construcción offline del índice.
         """
         if reset:
             self.reset()
@@ -61,53 +65,116 @@ class VectorStore:
         )
 
         if not chunks:
+            print("No se encontraron chunks para indexar.")
             return 0
 
-        texts = [chunk.text for chunk in chunks]
-        embeddings = self.embedding_provider.embed_texts(texts)
-        ids = [chunk.chunk_id for chunk in chunks]
-        metadatas = [
-            {
-                "source": chunk.source,
-                "page": chunk.page if chunk.page is not None else "",
-            }
-            for chunk in chunks
-        ]
+        batch_size = int(os.getenv("INDEX_BATCH_SIZE", "10"))
+        indexed_total = 0
 
-        self.collection.add(
-            ids=ids,
-            documents=texts,
-            metadatas=metadatas,
-            embeddings=embeddings,
-        )
-        return len(chunks)
+        print(f"Chunks detectados: {len(chunks)}")
+        print(f"Tamaño de lote: {batch_size}")
 
-    def search(self, query: str, top_k: int | None = None) -> List[Dict[str, Any]]:
-        """Recupera los fragmentos mas relevantes para una consulta."""
-        top_k = top_k or settings.top_k
-        query_embedding = self.embedding_provider.embed_query(query)
+        for start in range(0, len(chunks), batch_size):
+            batch = chunks[start:start + batch_size]
 
-        results = self.collection.query(
-            query_embeddings=[query_embedding],
-            n_results=top_k,
-            include=["documents", "metadatas", "distances"],
-        )
+            print(f"Generando embeddings para chunks {start + 1}-{start + len(batch)} de {len(chunks)}...")
 
-        documents = results.get("documents", [[]])[0]
-        metadatas = results.get("metadatas", [[]])[0]
-        distances = results.get("distances", [[]])[0]
+            texts = [chunk.text for chunk in batch]
+            embeddings = self.embedding_provider.embed_texts(texts)
 
-        retrieved: List[Dict[str, Any]] = []
-        for text, metadata, distance in zip(documents, metadatas, distances):
-            retrieved.append(
+            ids = [chunk.chunk_id for chunk in batch]
+            metadatas = [
                 {
-                    "text": text,
-                    "source": metadata.get("source", "desconocido"),
-                    "page": metadata.get("page") or None,
-                    "distance": distance,
+                    "source": chunk.source,
+                    "page": chunk.page if chunk.page is not None else "",
                 }
+                for chunk in batch
+            ]
+
+            self.collection.add(
+                ids=ids,
+                documents=texts,
+                metadatas=metadatas,
+                embeddings=embeddings,
             )
-        return retrieved
+
+            indexed_total += len(batch)
+            print(f"Indexados {indexed_total}/{len(chunks)} chunks")
+
+        return indexed_total
+
+    def _lexical_search(self, query: str, top_k: int):
+        chunks_path = Path("data/document_chunks.json")
+
+        if not chunks_path.exists():
+            return []
+
+        with chunks_path.open("r", encoding="utf-8") as f:
+            chunks = json.load(f)
+
+        query_terms = {
+            term.lower()
+            for term in re.findall(r"\w+", query)
+            if len(term) > 2
+        }
+
+        scored = []
+
+        for chunk in chunks:
+            text = chunk.get("text", "")
+            text_lower = text.lower()
+
+            score = sum(1 for term in query_terms if term in text_lower)
+
+            if score > 0:
+                scored.append(
+                    {
+                        "text": text,
+                        "source": chunk.get("source", "document_chunks.json"),
+                        "page": chunk.get("page", ""),
+                        "score": float(score),
+                    }
+                )
+
+        scored.sort(key=lambda item: item["score"], reverse=True)
+        return scored[:top_k]
+
+    def search(self, query: str, top_k: Optional[int] = None):
+        top_k = top_k or settings.top_k
+
+        try:
+            if self.collection.count() == 0:
+                return self._lexical_search(query, top_k)
+
+            query_embedding = self.embedding_provider.embed_query(query)
+
+            results = self.collection.query(
+                query_embeddings=[query_embedding],
+                n_results=top_k,
+                include=["documents", "metadatas", "distances"],
+            )
+
+            documents = results.get("documents", [[]])[0]
+            metadatas = results.get("metadatas", [[]])[0]
+            distances = results.get("distances", [[]])[0]
+
+            retrieved = []
+
+            for text, metadata, distance in zip(documents, metadatas, distances):
+                retrieved.append(
+                    {
+                        "text": text,
+                        "source": metadata.get("source", ""),
+                        "page": metadata.get("page", ""),
+                        "score": float(distance),
+                    }
+                )
+
+            return retrieved
+
+        except Exception as exc:
+            print(f"Advertencia: falló Chroma/embeddings. Usando fallback lexical. Detalle: {exc}")
+            return self._lexical_search(query, top_k)
 
     def count(self) -> int:
         """Devuelve la cantidad de chunks indexados."""
