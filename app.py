@@ -18,6 +18,8 @@ con el proyecto en data/vectorstore.
 from __future__ import annotations
 import os
 from pathlib import Path
+import zipfile
+from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from src.config import settings, validate_settings
@@ -34,6 +36,32 @@ validate_settings()
 
 app = Flask(__name__)
 app.secret_key = settings.flask_secret_key
+
+def ensure_vectorstore_available() -> None:
+    """
+    En Hugging Face el vectorstore se sube comprimido para evitar problemas
+    con binarios. Al iniciar la app, se descomprime si Chroma no está presente.
+    """
+    vectorstore_dir = Path("data/vectorstore")
+    vectorstore_zip = Path("data/vectorstore.dat")
+    chroma_file = vectorstore_dir / "chroma.sqlite3"
+
+    if chroma_file.exists():
+        return
+
+    if not vectorstore_zip.exists():
+        print("Advertencia: no se encontró data/vectorstore.zip")
+        return
+
+    vectorstore_dir.mkdir(parents=True, exist_ok=True)
+
+    print("Descomprimiendo vectorstore preconstruido...")
+    with zipfile.ZipFile(vectorstore_zip, "r") as zip_ref:
+        zip_ref.extractall(vectorstore_dir)
+
+    print("Vectorstore descomprimido correctamente.")
+
+ensure_vectorstore_available()
 
 Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
 Path(settings.log_dir).mkdir(parents=True, exist_ok=True)
